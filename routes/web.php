@@ -2,49 +2,53 @@
 
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
+// ADMIN CONTROLLERS
+use App\Http\Controllers\DashboardAdminController;
+use App\Http\Controllers\BukuController;
+use App\Http\Controllers\AnggotaAdminController;
+use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\AnggotaController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-//admin.koleksi
-    Route::get('/admin/koleksi', function () {
-        return view('admin.koleksi');
+//ADMIN
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
-    });
+    // Dashboard
+    Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('admin.dashboard');
 
-    //admin.dashboard
-Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
+    // Buku (Koleksi)
+    Route::resource('/buku', BukuController::class)->names('admin.buku');
+
+    // Anggota
+    Route::resource('/anggota', AnggotaAdminController::class)->names('admin.anggota');
+
+    // Transaksi
+    Route::get('/transaksi', [TransaksiController::class, 'index'])->name('admin.transaksi.index');
+    Route::get('/transaksi/create', [TransaksiController::class, 'create'])->name('admin.transaksi.create');
+    Route::post('/transaksi/store', [TransaksiController::class, 'store'])->name('admin.transaksi.store');
+    Route::post('/transaksi/{id}/pengembalian', [TransaksiController::class, 'pengembalian'])->name('admin.transaksi.pengembalian');
+
+    // Laporan
+    Route::get('/laporan', [LaporanController::class, 'index'])->name('admin.laporan');
 });
 
-Route::get('/admin', function () {
-    return redirect('/admin/dashboard');
-});
+//ANGGOTA
+Route::prefix('anggota')->middleware(['auth'])->group(function () {
 
-Route::get('/admin/keuangan', function () {
-    return view('admin.keuangan');
-});
+    // Pencarian Buku
+    Route::get('/pencarian', [AnggotaController::class, 'pencarian'])->name('anggota.pencarian');
 
-// Route Dummy (Sementara) untuk menu yang belum dibuat
-Route::get('/admin/anggota', function () {
-    return view('admin.dashboard')->with('message', 'Halaman Manajemen Anggota (Dummy)');
-});
+    // Riwayat Peminjaman
+    Route::get('/peminjaman', [AnggotaController::class, 'peminjaman'])->name('anggota.peminjaman');
 
-Route::get('/admin/transaksi', function () {
-    return view('admin.dashboard')->with('message', 'Halaman Transaksi (Dummy)');
-});
+    // Profil Anggota
+    Route::get('/profil', [AnggotaController::class, 'profil'])->name('anggota.profil');
+    Route::post('/profil/update', [AnggotaController::class, 'updateProfil'])->name('anggota.profil.update');
 
-Route::get('/admin/laporan', function () {
-    return view('admin.dashboard')->with('message', 'Halaman Laporan (Dummy)');
+    // Bantuan
+    Route::get('/bantuan', [AnggotaController::class, 'bantuan'])->name('anggota.bantuan');
 });
